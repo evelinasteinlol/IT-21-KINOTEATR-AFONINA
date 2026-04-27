@@ -1,42 +1,40 @@
+-- Создание таблиц
 CREATE TABLE `Cinema_Halls` (
-  `id` integer PRIMARY KEY,
-  `name` varchar(255),
-  `total_rows` integer,
-  `total_seats` integer,
-  `category` text,
-  `is_active` boolean
+  `id` INT PRIMARY KEY,
+  `name` VARCHAR(255),
+  `total_rows` INT,
+  `total_seats` INT,
+  `category` TEXT,
+  `is_active` BOOLEAN
 );
 
 CREATE TABLE `Movies` (
-  `id` integer PRIMARY KEY,
+  `id` INT PRIMARY KEY,
   `title` TEXT,
   `genre` TEXT,
-  `duration` INTEGER,
+  `duration` INT,
   `age_rating` VARCHAR(5),
-  `release_year` INTEGER,
+  `release_year` INT,
   `description` TEXT
 );
 
 CREATE TABLE `Sessions` (
-  `id` integer PRIMARY KEY,
-  `movie_id` integer,
-  `hall_id` integer,
-  `start_time` datetime,
-  `prive` decimal,
-  `format` text
+  `id` INT PRIMARY KEY,
+  `movie_id` INT,
+  `hall_id` INT,
+  `start_time` DATETIME,
+  `price` DECIMAL(10,2),
+  `format` TEXT,
+  FOREIGN KEY (`hall_id`) REFERENCES `Cinema_Halls`(`id`),
+  FOREIGN KEY (`movie_id`) REFERENCES `Movies`(`id`)
 );
 
 CREATE TABLE `Tickets` (
-  `id` integer PRIMARY KEY,
-  `session_id` integer,
-  `row_number` integer,
-  `seat_number` integer,
-  `sale_time` datetime,
-  `status` text
+  `id` INT PRIMARY KEY,
+  `session_id` INT,
+  `row_number` INT,
+  `seat_number` INT,
+  `sale_time` DATETIME,
+  `status` TEXT,
+  FOREIGN KEY (`session_id`) REFERENCES `Sessions`(`id`)
 );
-
-ALTER TABLE `Sessions` ADD FOREIGN KEY (`hall_id`) REFERENCES `Cinema_Halls` (`id`);
-
-ALTER TABLE `Tickets` ADD FOREIGN KEY (`session_id`) REFERENCES `Sessions` (`id`);
-
-ALTER TABLE `Sessions` ADD FOREIGN KEY (`movie_id`) REFERENCES `Movies` (`id`);
