@@ -1,40 +1,63 @@
--- Создание таблиц
-CREATE TABLE `Cinema_Halls` (
-  `id` INT PRIMARY KEY,
-  `name` VARCHAR(255),
-  `total_rows` INT,
-  `total_seats` INT,
-  `category` TEXT,
-  `is_active` BOOLEAN
+-- Таблица отделов
+CREATE TABLE IF NOT EXISTS departments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE
 );
 
-CREATE TABLE `Movies` (
-  `id` INT PRIMARY KEY,
-  `title` TEXT,
-  `genre` TEXT,
-  `duration` INT,
-  `age_rating` VARCHAR(5),
-  `release_year` INT,
-  `description` TEXT
+-- Таблица сотрудников
+CREATE TABLE IF NOT EXISTS employees (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    full_name TEXT NOT NULL,
+    dept_id INTEGER,
+    FOREIGN KEY (dept_id) REFERENCES departments(id) ON DELETE SET NULL
 );
 
-CREATE TABLE `Sessions` (
-  `id` INT PRIMARY KEY,
-  `movie_id` INT,
-  `hall_id` INT,
-  `start_time` DATETIME,
-  `price` DECIMAL(10,2),
-  `format` TEXT,
-  FOREIGN KEY (`hall_id`) REFERENCES `Cinema_Halls`(`id`),
-  FOREIGN KEY (`movie_id`) REFERENCES `Movies`(`id`)
+-- Таблица режиссеров (новая)
+CREATE TABLE IF NOT EXISTS directors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    birth_year INTEGER
 );
 
-CREATE TABLE `Tickets` (
-  `id` INT PRIMARY KEY,
-  `session_id` INT,
-  `row_number` INT,
-  `seat_number` INT,
-  `sale_time` DATETIME,
-  `status` TEXT,
-  FOREIGN KEY (`session_id`) REFERENCES `Sessions`(`id`)
+-- Таблица фильмов
+CREATE TABLE IF NOT EXISTS movies (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    genre TEXT,
+    duration INTEGER, -- в минутах
+    age_rating TEXT,
+    release_year INTEGER,
+    description TEXT,
+    director_id INTEGER, -- связь с таблицей directors
+    FOREIGN KEY (director_id) REFERENCES directors(id) ON DELETE SET NULL
+);
+
+-- Таблица залов (новая)
+CREATE TABLE IF NOT EXISTS halls (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    capacity INTEGER NOT NULL
+);
+
+-- Таблица сеансов
+CREATE TABLE IF NOT EXISTS sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    movie_id INTEGER NOT NULL,
+    hall_id INTEGER NOT NULL,
+    start_time TEXT NOT NULL, -- формат: YYYY-MM-DD HH:MM:SS
+    ticket_price REAL NOT NULL,
+    format_type TEXT, -- 2D, 3D, IMAX
+    FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
+    FOREIGN KEY (hall_id) REFERENCES halls(id) ON DELETE CASCADE
+);
+
+-- Можно добавить таблицы для билетов, отзывов и т.п.
+-- Например, таблица билетов:
+CREATE TABLE IF NOT EXISTS tickets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    seat_number TEXT, -- или INTEGER, по необходимости
+    customer_name TEXT,
+    purchase_time TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
 );
