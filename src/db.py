@@ -1,32 +1,66 @@
-import os
 import sqlite3
+import os
 
-# Настройка путей
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# Путь к файлу базы данных
-DB_PATH = os.path.join(BASE_DIR, 'database', 'app.db')
-
-# Путь к схеме (schema.sql)
-SCHEMA_PATH = os.path.join(BASE_DIR, 'schema.sql')
-
-def get_connection():
-    """Создает подключение с поддержкой имен колонок и связей."""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON;")
-    return conn
+DB_PATH = "cinema.db"
 
 def init_db():
-    """Инициализация базы из schema.sql."""
-    if not os.path.exists(SCHEMA_PATH):
-        print(f"Ошибка! Файл {SCHEMA_PATH} не найден. Проверь папку проекта.")
-        return
+    """Инициализация базы данных и создание таблиц"""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # Создание таблиц согласно схеме
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Cinema_Halls (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            total_rows INTEGER,
+            total_seats INTEGER,
+            category TEXT,
+            is_active BOOLEAN
+        )
+    ''')
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Movies (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT,
+            genre TEXT,
+            duration INTEGER,
+            age_rating TEXT,
+            release_year INTEGER,
+            description TEXT
+        )
+    ''')
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            movie_id INTEGER,
+            hall_id INTEGER,
+            start_time DATETIME,
+            price DECIMAL(10,2),
+            format TEXT,
+            FOREIGN KEY (hall_id) REFERENCES Cinema_Halls(id),
+            FOREIGN KEY (movie_id) REFERENCES Movies(id)
+        )
+    ''')
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Tickets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER,
+            row_number INTEGER,
+            seat_number INTEGER,
+            sale_time DATETIME,
+            status TEXT,
+            FOREIGN KEY (session_id) REFERENCES Sessions(id)
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
+    print("База данных успешно инициализирована")
 
-    try:
-        with get_connection() as conn:
-            with open(SCHEMA_PATH, 'r', encoding='utf-8') as f:
-                conn.executescript(f.read())
-            print("--- Структура базы данных успешно создана и заполнена ---")
-    except sqlite3.Error as e:
-        print(f"Ошибка SQLite: {e}")
+def get_db_connection():
+    """Получение соединения с базой данных"""
+    return sqlite3.connect(DB_PATH)
